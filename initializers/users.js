@@ -1,12 +1,10 @@
 const bcrypt = require('bcrypt')
-const { Initializer, api } = require('actionhero')
+const {Initializer, api} = require('actionhero')
 let uniqueValidator = require('mongoose-unique-validator');
 let jwt = require('jsonwebtoken');
 
-
-
 module.exports = class Users extends Initializer {
-  constructor () {
+  constructor() {
     super()
     this.name = 'users'
     this.saltRounds = 10
@@ -14,35 +12,34 @@ module.exports = class Users extends Initializer {
     this.usersHash = 'users'
   }
 
-  async initialize () {
+  async initialize() {
 
     let mongoose = api.mongo;
     let userSchema = mongoose.Schema({
-        userName: {
-          type: String,
-          required: true,
-          unique: true
-        },
-        hashedPassword: {
-          type: String,
-          required: true
-        },
-        passwordUpdatedAt: {
-          type: Date,
-          required: true
-        },
-        token: {
-          type: String
-        }
+      userName: {
+        type: String,
+        required: true,
+        unique: true
+      },
+      hashedPassword: {
+        type: String,
+        required: true
+      },
+      passwordUpdatedAt: {
+        type: Date,
+        required: true
+      },
+      token: {
+        type: String
+      }
     });
     userSchema.plugin(uniqueValidator);
-    let Users = mongoose.model('Users', userSchema);
-
+    let User = mongoose.model('Users', userSchema);
 
     api.users = {}
     api.users.create = async (userName, password) => {
       const hashedPassword = await api.users.cryptPassword(password)
-      const user = new Users();
+      const user = new User();
       user.userName = userName;
       user.hashedPassword = hashedPassword;
       user.passwordUpdatedAt = new Date();
@@ -56,11 +53,14 @@ module.exports = class Users extends Initializer {
     api.users.list = async () => {
       let users = await Users.find();
       return users.map(user => {
-        return {
-          _id: user._id,
-          userName: user.userName
-        };
+        return {_id: user._id, userName: user.userName};
       });
+    }
+
+    api.users.findOne = async (search) => {
+      let user = await User.findOne(search);
+      if(!user) throw new Error('user not found');
+      return user;
     }
 
     api.users.authenticate = async (userName, token, password) => {
@@ -78,34 +78,24 @@ module.exports = class Users extends Initializer {
 
       try {
         // try authentication by token
-        if(token){
+        if (token) {
           let data = decodeToken(token),
-              user = await Users.findOne({_id: data.id}),
-              pswdOlderThanToken = new Date(data.iat*1000) > user.passwordUpdatedAt;
+            user = await User.findOne({_id: data.id}),
+            pswdOlderThanToken = new Date(data.iat * 1000) > user.passwordUpdatedAt;
 
-          if(user && pswdOlderThanToken) {
+          if (user && pswdOlderThanToken) {
             api.user = user;
-            return {
-              authenticated: true,
-              token: token,
-              userName: user.userName,
-              id: user._id
-            }
+            return {authenticated: true, token: token, userName: user.userName, id: user._id}
           }
         }
 
         // try authentication by password
-        let user = await Users.findOne({userName: userName});
+        let user = await User.findOne({userName: userName});
         let authenticated = await api.users.comparePassword(user.hashedPassword, password);
-        if(authenticated){
+        if (authenticated) {
           api.username = user.userName;
-          return {
-            authenticated: true,
-            token: generateToken(user),
-            id: user._id,
-            userName: user.userName
-          }
-        } else{
+          return {authenticated: true, token: generateToken(user), id: user._id, userName: user.userName}
+        } else {
           throw new Error();
         }
 
@@ -114,8 +104,7 @@ module.exports = class Users extends Initializer {
       }
     }
 
-    api.users.delete = async (userName, password) => {
-    }
+    api.users.delete = async (userName, password) => {}
 
     api.users.cryptPassword = async (password) => {
       return bcrypt.hash(password, this.saltRounds)

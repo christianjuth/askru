@@ -1,9 +1,9 @@
 var mongoose = require('mongoose');
-const { Initializer, api } = require('actionhero')
+const {Initializer, api} = require('actionhero')
 
 module.exports = class Mongo extends Initializer {
 
-  constructor () {
+  constructor() {
     super()
     this.name = 'mongo'
     this.loadPriority = 100
@@ -11,17 +11,17 @@ module.exports = class Mongo extends Initializer {
     this.stopPriority = 100
   }
 
-  async initialize () {
+  async initialize() {
     this.config = api.config.mongo;
     this.uri = this.config.uri || this.generateMonogURI(this.config);
     api.mongo = mongoose;
   }
 
-  async start () {
+  async start() {
     api.log('MongoDB start', 'debug');
     let uri = this.uri;
 
-    await mongoose.connect(uri, function (err) {
+    await mongoose.connect(uri, function(err) {
       if (err) {
         api.log('MongoDB fails to connect to ' + uri, 'error');
         return;
@@ -30,10 +30,10 @@ module.exports = class Mongo extends Initializer {
     });
   }
 
-  async stop () {
+  async stop() {
     api.log('MongoDB teardown', 'debug');
 
-    mongoose.disconnect(function (err) {
+    mongoose.disconnect(function(err) {
       if (err) {
         api.log('MongoDB disconnect failed', 'error');
         return;
@@ -41,7 +41,6 @@ module.exports = class Mongo extends Initializer {
       api.log('MongoDB connection closed', 'debug');
     });
   }
-
 
   /**
    * Generates a mongo uri from the given object
