@@ -34,7 +34,7 @@ module.exports = class Users extends Initializer {
       }
     });
     userSchema.plugin(uniqueValidator);
-    let User = mongoose.model('Users', userSchema);
+    let User = mongoose.model('User', userSchema);
 
     api.users = {}
     api.users.create = async (userName, password) => {
@@ -51,7 +51,7 @@ module.exports = class Users extends Initializer {
     }
 
     api.users.list = async () => {
-      let users = await Users.find();
+      let users = await User.find();
       return users.map(user => {
         return {_id: user._id, userName: user.userName};
       });

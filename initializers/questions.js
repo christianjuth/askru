@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt')
 const {Initializer, api} = require('actionhero')
 let uniqueValidator = require('mongoose-unique-validator');
-let jwt = require('jsonwebtoken');
 
 module.exports = class Questions extends Initializer {
   constructor() {
@@ -14,8 +13,9 @@ module.exports = class Questions extends Initializer {
     let mongoose = api.mongo,
       Schema = mongoose.Schema;
     let questionsSchema = mongoose.Schema({
-      _userId: {
+      user: {
         type: Schema.Types.ObjectId,
+        ref: 'User',
         required: true
       },
       title: {
@@ -27,14 +27,17 @@ module.exports = class Questions extends Initializer {
         type: String,
         index: 'text',
         required: true
-      }
+      },
+      advice: [{ type: Schema.Types.ObjectId, ref: 'Advice' }]
     });
-    let Question = mongoose.model('Questions', questionsSchema);
+    let Question = mongoose.model('Question', questionsSchema);
 
     api.questions = {}
-    api.questions.create = async ({_userId, title, body}) => {
+    api.questions.model = Question;
+
+    api.questions.create = async ({user, title, body}) => {
       const question = new Question();
-      question._userId = _userId;
+      question.user = user;
       question.title = title;
       question.body = body;
       return await question.save();
@@ -49,13 +52,33 @@ module.exports = class Questions extends Initializer {
 
       if(userName) {
         let user = await api.users.findOne({userName});
-        search._userId = user._id;
+        search.user = user._id;
       }
 
       let questions = await Question.find(search);
-      return questions.map(question => {
-        return {_id: question._id, title: question.title, body: question.body};
+      return questions
+      .map(({_id, title, body}) => {
+        return {
+          _id,
+          title,
+          body
+        }
       });
+    }
+
+    api.questions.findOne = async ({_id}) => {
+      const question = await Question.findOne({_id})
+        .populate('user', 'userName')
+        .populate({
+          path: 'advice',
+          select: 'body',
+          populate: {
+            path: 'user',
+            select: 'userName'
+          }
+        });
+      if(!question) throw new Error('question not found');
+      return question;
     }
 
     api.questions.search = async ({query}) => {

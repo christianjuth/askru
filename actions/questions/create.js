@@ -21,7 +21,7 @@ module.exports = class MyAction extends Action {
     let {_id} = api.user, {title, body} = data.params;
 
     try {
-      let question = await api.questions.create({_userId: _id, title, body});
+      let question = await api.questions.create({user: _id, title, body});
       data.response.question = {
         _id: question._id
       };
