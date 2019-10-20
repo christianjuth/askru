@@ -85,6 +85,14 @@ module.exports = class Questions extends Initializer {
       return await Question.find({$text: {$search: query}});
     }
 
+    api.questions.searchWithAdvice = async ({query}) => {
+      return await Question.find({$text: {$search: query}})
+      .populate({
+        path: 'advice',
+        select: 'body'
+      });
+    }
+
     api.questions.delete = async (userName, password) => {}
   }
 

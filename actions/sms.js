@@ -9,7 +9,18 @@ module.exports = class MyAction extends Action {
   }
 
   async run(data) {
-    console.log(data.params)
-    data.response = '<Response><Message>Hello from Twilio!</Message></Response>';
+    let {Body, From} = data.connection.params;
+
+    let results = await api.questions.searchWithAdvice({query: Body});
+
+    let advice = 'honk';
+    if(results[0]) {
+      advice = results[0].advice.map((obj, i) => `${i+1}. ${obj.body}`).join('\n');
+    }
+
+    await api.twilio.send({
+      to: From,
+      message: advice
+    });
   }
 }

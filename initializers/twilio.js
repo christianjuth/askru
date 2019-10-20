@@ -9,15 +9,21 @@ module.exports = class Twilio extends Initializer {
   }
 
   async initialize() {
-    
-    //
-    // client.messages.create({
-    //   body: 'Hello from Node',
-    //   to: '+19088015484',  // Text this number
-    //   from: '+17325851946' // From a valid Twilio number
-    // })
-    // .then((message) => console.log(message.sid));
+    this.config = api.config.twilio;
+    let client;
+    if(this.config.sid) {
+      client = new twilio(this.config.sid, this.config.token);
+    }
 
+    api.twilio = {};
+    api.twilio.send = async ({to, message}) => {
+      if(!client) return;
+      await client.messages.create({
+        to,
+        body: message,
+        from: this.config.from
+      })
+    }
   }
 
   // async start () {}
