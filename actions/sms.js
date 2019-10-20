@@ -8,8 +8,8 @@ module.exports = class MyAction extends Action {
     this.description = 'SMS search'
   }
 
-  async run(data) {
-    // let {query} = data.params;
-    data.response = '<Response><Message>Hello from Twilio!</Message></Response>';
+  async run({response}) {
+    console.log(data.params);
+    response.send('<Response><Message>Hello from Twilio!</Message></Response>');
   }
 }
