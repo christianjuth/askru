@@ -17,7 +17,6 @@ module.exports = class Twilio extends Initializer {
 
     api.twilio = {};
     api.twilio.send = async ({to, message}) => {
-      console.log('TESTING_____TESTING', client);
       if(!client) return;
       await client.messages.create({
         to,

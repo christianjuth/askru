@@ -13,10 +13,14 @@ module.exports = class MyAction extends Action {
 
     let results = await api.questions.searchWithAdvice({query: Body});
 
-    let advice = 'honk';
-    if(results[0]) {
-      advice = results[0].advice.map((obj, i) => `${i+1}. ${obj.body}`).join('\n');
+    let advice = 'honk!';
+    for(let i = 0; i < results.length; i++) {
+      if(results[i] && results[i].advice.length > 0) {
+        advice = results[i].advice.map((obj, i) => `${i+1}. ${obj.body}`).join('\n');
+        break;
+      }
     }
+
 
     await api.twilio.send({
       to: From,
