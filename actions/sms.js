@@ -26,7 +26,5 @@ module.exports = class MyAction extends Action {
       to: From,
       message: advice
     });
-
-    data.response = '';
   }
 }
