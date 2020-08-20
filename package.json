@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "actionhero": "20.0.0",
-    "bcrypt": "^3.0.6",
+    "bcrypt": "^5.0.0",
     "ioredis": "latest",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.7.5",
